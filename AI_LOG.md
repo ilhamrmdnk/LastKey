@@ -25,3 +25,25 @@ Hasil dari AI diperiksa dan disesuaikan dengan kondisi serta rancangan aplikasi 
 - `security/assets.md` — penyusunan inventaris aset dan klasifikasi keamanan.
 - `security/dfd-awal.png` — diskusi penyusunan rancangan DFD awal dan membantu membuat gambar DFD.
 - `AI_LOG.md` — dokumentasi penggunaan AI.
+
+## 5. Penggunaan AI pada Tugas 1 — Threat Modeling
+
+AI digunakan sebagai alat bantu dalam:
+
+1. Memperbarui inventaris aset dan data LastKey.
+2. Menyusun rancangan DFD dan trust boundary.
+3. Mengidentifikasi ancaman menggunakan metode STRIDE.
+4. Membantu menyusun analisis kemungkinan dan dampak risiko.
+5. Menyusun rencana kontrol keamanan untuk lima risiko prioritas.
+6. Membantu melakukan pengecekan konsistensi antara aset, threat, risiko, dan kontrol.
+
+Hasil analisis diperiksa dan disesuaikan dengan kondisi serta rancangan produk LastKey. Komponen yang belum diimplementasikan pada versi produk saat ini dicatat sebagai rancangan atau target pengembangan dan tidak dianggap sebagai fitur yang sudah berjalan.
+
+## 6. File yang Dibantu AI pada Tugas 1
+
+- `security/assets.md` — pembaruan inventaris aset dan data.
+- `security/dfd-arsitektur-sec-0.1.png` — penyusunan rancangan arsitektur, aliran data, dan trust boundary.
+- `security/stride.md` — penyusunan identifikasi ancaman berdasarkan STRIDE.
+- `security/risk-analysis.md` — penyusunan analisis likelihood, impact, dan lima risiko prioritas.
+- `security/control-plan.md` — penyusunan rencana kontrol untuk risiko prioritas.
+- `AI_LOG.md` — dokumentasi penggunaan AI.
