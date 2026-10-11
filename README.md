@@ -12,7 +12,10 @@ LastKey adalah secure digital vault dengan konsep **Dead Man's Switch** untuk me
 - **Target Pengguna:** Individu dengan aset digital berharga, pengelola dokumen penting keluarga, profesional hukum/keuangan, serta pemilik bisnis yang memerlukan protokol proteksi data berkelanjutan.
 - **Gambaran Cara Kerja:** Pengguna mengelompokkan data ke dalam kompartemen vault, menentukan penerima darurat (*recipient*), serta menetapkan frekuensi check-in (*interval*) dan masa tenggang (*grace period*). Selama pengguna rutin melakukan konfirmasi kehadiran (check-in), vault tetap terkunci. Jika pengguna gagal melakukan check-in melampaui batas waktu yang ditentukan, mekanisme emergency release akan diaktifkan untuk meneruskan akses kepada penerima yang ditunjuk.
 
-> *Catatan: Pada tahap pengembangan saat ini, fungsionalitas backend, basis data, dan algoritma enkripsi nyata belum diimplementasikan.*
+> *Catatan: Pada tahap pengembangan saat ini, backend dan basis data belum
+> diimplementasikan. Komponen dasar AES-256-GCM telah dikembangkan sebagai
+> bagian dari tugas Cryptography, tetapi belum terintegrasi dengan backend
+> dan penyimpanan Vault.*
 
 ---
 
@@ -44,6 +47,8 @@ Aplikasi dibangun menggunakan teknologi berikut:
 - **TypeScript (v5.9.3):** Pengetikan statis untuk menjaga integritas tipe dan keandalan kode.
 - **Tailwind CSS (v4):** Framework utility-first CSS untuk styling antarmuka modern dan responsif.
 - **ESLint (v9):** Alat analisis kode statis untuk memastikan kualitas dan konsistensi kode JavaScript/TypeScript.
+- **@noble/ciphers:** Library kriptografi yang digunakan untuk implementasi AES-256-GCM.
+- **tsx:** Runtime TypeScript yang digunakan untuk menjalankan automated test komponen kriptografi.
 
 ---
 
@@ -118,6 +123,11 @@ ilham-project/
   ```
   *Melakukan kompilasi produksi, type-checking menyeluruh via TypeScript, dan pra-render halaman statis.*
 
+- **Menjalankan Automated Test Kriptografi:**
+
+  ```bash
+  npm test
+
 ---
 
 ## 6. Current Routes
@@ -179,13 +189,128 @@ Antarmuka LastKey dirancang dengan prinsip inklusivitas dan kemudahan penggunaan
 
 ## 10. Project Status
 
-**Status Saat Ini: Milestone 1 — Initial Product Development**
+**Status Saat Ini: Milestone 1 — Initial Product Development + Cryptography Component**
 
-Fase ini difokuskan pada perancangan antarmuka pengguna (UI/UX), penyusunan struktur rute navigasi, pembuatan komponen modular, serta simulasi formulir dengan validasi sisi client.
+LastKey telah menyelesaikan tahap awal pengembangan produk berupa perancangan
+antarmuka, struktur rute navigasi, komponen modular, mock data, serta validasi
+formulir sisi client.
 
-Fitur-fitur berikut **belum** menjadi bagian dari tahap ini dan direncanakan untuk milestone mendatang:
+Selain itu, sebagai bagian dari tugas Cryptography, project telah memiliki
+komponen dasar **AES-256-GCM** untuk mengenkripsi dan mendekripsi data
+menggunakan encryption key dan nonce yang dibuat secara aman.
+
+Fitur-fitur berikut masih direncanakan untuk tahap pengembangan berikutnya:
+
 - Layanan backend dan API server.
 - Integrasi basis data (*persistent database*).
-- Sistem autentikasi pengguna (*authentication & authorization*).
-- Implementasi algoritma kriptografi nyata (*client-side encryption / Shamir's Secret Sharing*).
-- Sistem background timer otomatis untuk produksi Dead Man's Switch.
+- Sistem autentikasi dan otorisasi pengguna.
+- Integrasi penuh AES-256-GCM dengan penyimpanan Vault.
+- Key management dan perlindungan encryption key.
+- Sistem Dead Man's Switch server-side.
+- Background scheduler dan mekanisme check-in yang sebenarnya.
+- Mekanisme secure release kepada recipient.
+- Audit log dan security monitoring yang terintegrasi dengan backend.
+
+---
+
+## 11. Cryptography Requirements
+
+LastKey menyimpan data digital penting pengguna dalam konsep secure digital vault.
+Data tersebut membutuhkan perlindungan terhadap akses dan perubahan yang tidak sah.
+
+Pada tugas Cryptography ini, komponen kriptografi yang dikembangkan adalah
+**AES-256-GCM** sebagai dasar perlindungan data vault.
+
+### Data yang Membutuhkan Perlindungan Kriptografi
+
+| Data | Tujuan Keamanan | Prioritas |
+|---|---|---|
+| File/data dalam Vault | Menjaga kerahasiaan data dan mendeteksi perubahan yang tidak sah | Kritis |
+| Encryption Key | Mencegah pihak yang tidak berwenang memperoleh kunci untuk membuka data vault | Kritis |
+| Encrypted Vault Payload | Menjaga kerahasiaan data terenkripsi dan mendeteksi manipulasi terhadap ciphertext | Tinggi |
+| Data sensitif untuk mekanisme release | Mencegah data sensitif terbuka atau dimodifikasi sebelum proses release yang sah | Tinggi |
+
+### Ruang Lingkup Komponen
+
+Komponen kriptografi pada tahap ini berfokus pada perlindungan data Vault
+menggunakan AES-256-GCM.
+
+Implementasi ini merupakan komponen dasar dan belum mencakup:
+
+- key management secara penuh,
+- penyimpanan database,
+- autentikasi server-side,
+- Dead Man's Switch server-side,
+- mekanisme emergency release produksi.
+
+---
+
+## 12. Cryptography Component Design
+
+### AES-256-GCM
+
+Komponen kriptografi menerima data plaintext dan encryption key, kemudian
+menghasilkan ciphertext yang dapat digunakan kembali untuk proses dekripsi.
+
+### Input
+
+- **Plaintext:** data yang akan dilindungi dalam bentuk `Uint8Array`.
+- **Encryption Key:** kunci AES-256 sepanjang 32 byte.
+- **Nonce:** nilai acak sepanjang 12 byte yang dibuat menggunakan CSPRNG.
+
+### Proses
+
+1. Membuat nonce baru menggunakan Cryptographically Secure Pseudo-Random
+   Number Generator (CSPRNG).
+2. Membuat cipher AES-GCM menggunakan encryption key dan nonce.
+3. Mengenkripsi plaintext.
+4. Menghasilkan ciphertext beserta authentication tag.
+5. Mengembalikan ciphertext dan nonce sebagai hasil enkripsi.
+
+### Output
+
+Output enkripsi terdiri dari:
+
+- `ciphertext`: data yang telah dienkripsi dan memiliki authentication tag.
+- `nonce`: nilai yang diperlukan untuk proses dekripsi.
+
+Encryption key tidak disimpan di dalam source code dan tidak dimasukkan
+ke repository.
+
+### Alur Enkripsi
+
+```text
+Plaintext
+    ↓
+Generate random nonce menggunakan CSPRNG
+    ↓
+AES-256-GCM Encryption
+    ↓
+Ciphertext + Authentication Tag
+    ↓
+Encrypted Vault Payload
+
+---
+
+## 13. Cryptography Testing
+
+Komponen AES-256-GCM diuji menggunakan Node.js built-in test runner
+yang dijalankan melalui `tsx`.
+
+### Skenario Pengujian
+
+| No. | Skenario | Jenis Test | Hasil yang Diharapkan |
+|---|---|---|---|
+| 1 | Encrypt lalu decrypt dengan key yang sama | Positive | Plaintext kembali seperti semula |
+| 2 | Mengenkripsi plaintext yang sama dua kali | Boundary/Randomness | Nonce berbeda |
+| 3 | Ciphertext dimodifikasi | Negative | Proses decrypt gagal |
+| 4 | Menggunakan key yang salah | Negative | Proses decrypt gagal |
+
+### Hasil Pengujian
+
+Seluruh pengujian berhasil dijalankan:
+
+```text
+tests 4
+pass 4
+fail 0
